@@ -20,32 +20,21 @@ defmodule RosettaGeoTIFF do
   end
 
   defp order(header_bytes) do
-    list = :binary.bin_to_list(header_bytes)
-
-    <<Enum.at(list, 0), Enum.at(list, 1)>>
+    :binary.bin_to_list(header_bytes, {0, 2})
+    |> :erlang.list_to_binary()
   end
 
   defp first_ifd(header_bytes, order) do
     case order do
-      "II" -> decode_II(header_bytes)
-      "MM" -> decode_MM(header_bytes)
+      "II" -> decode_first_ifd(header_bytes, :little)
+      "MM" -> decode_first_ifd(header_bytes, :big)
     end
   end
 
-  defp decode_II(header_bytes) do
-    list = :binary.bin_to_list(header_bytes)
-
-    :binary.decode_unsigned(
-      <<Enum.at(list, 7), Enum.at(list, 6), Enum.at(list, 5), Enum.at(list, 4)>>
-    )
-  end
-
-  defp decode_MM(header_bytes) do
-    list = :binary.bin_to_list(header_bytes)
-
-    :binary.decode_unsigned(
-      <<Enum.at(list, 4), Enum.at(list, 5), Enum.at(list, 6), Enum.at(list, 7)>>
-    )
+  defp decode_first_ifd(header_bytes, endianness) do
+    :binary.bin_to_list(header_bytes, {4, 4})
+    |> :erlang.list_to_binary()
+    |> :binary.decode_unsigned(endianness)
   end
 
   defp format_error(filename, reason) do
