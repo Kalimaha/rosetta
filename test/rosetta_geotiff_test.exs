@@ -5,6 +5,10 @@ defmodule RosettaGeoTIFFTest do
     {:ok, filename: "./test/resources/example.tif"}
   end
 
+  test "explore file", context do
+    RosettaGeoTIFF.explore(context[:filename])
+  end
+
   test "opens the file", context do
     {:ok, headers} = RosettaGeoTIFF.read_headers(context[:filename])
 
