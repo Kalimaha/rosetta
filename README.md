@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/Kalimaha/rosetta.svg?branch=master)](https://travis-ci.org/Kalimaha/rosetta)
+[![Coverage Status](https://coveralls.io/repos/github/Kalimaha/rosetta/badge.svg?branch=master)](https://coveralls.io/github/Kalimaha/rosetta?branch=master)
 
 # Rosetta
 
