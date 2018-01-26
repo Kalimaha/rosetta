@@ -8,6 +8,9 @@ defmodule GeoTIFF do
     iex> {:ok, response} = GeoTIFF.read_headers(filename)
     iex> response.first_ifd_offset
     270_276
+    iex> ifd = Enum.at response.ifds, 0
+    iex> Enum.at ifd.tags, 2
+    %{count: 15, tag: "GeoAsciiParamsTag", type: "ASCII", value: "unnamed|NAD27|"}
 
     iex> filename = "spam.eggs"
     iex> GeoTIFF.read_headers(filename)
@@ -18,12 +21,35 @@ defmodule GeoTIFF do
          {:ok, header_bytes}  <- header_bytes(file),
          {:ok, endianess}     <- endianess(header_bytes),
          first_ifd_offset     <- first_ifd_offset(header_bytes, endianess),
-         ifds                 <- parse_ifds(file, first_ifd_offset, endianess, []) do
+         partial_ifds         <- parse_ifds(file, first_ifd_offset, endianess, []),
+         ifds                 <- resolve_tag_values(file, partial_ifds, endianess) do
 
       :file.close(file)
       {:ok, %{:filename => filename, :endianess => endianess, :first_ifd_offset => first_ifd_offset, :ifds => ifds}}
     else
       {:error, reason} -> {:error, format_error(filename, reason)}
+    end
+  end
+
+  def resolve_tag_values(file, ifds, endianess) do
+    ifd     = Enum.at ifds, 0
+    tags    = Enum.map ifd.tags, &(resolve_tag_value(file, &1, endianess))
+    nu_ifd  = Map.merge(ifd, %{:tags => tags})
+
+    [nu_ifd]
+  end
+
+  def resolve_tag_value(file, tag, endianess) do
+    case tag.type do
+      "ASCII" ->
+        :file.position(file, tag.value)
+
+        {:ok, bytes}  = :file.read(file, tag.count)
+        codepoints    = String.codepoints(bytes)
+        value         = Enum.slice(codepoints, 0, length(codepoints) - 1) |> List.to_string
+
+        Map.merge tag, %{:value => value}
+      _ -> tag
     end
   end
 
