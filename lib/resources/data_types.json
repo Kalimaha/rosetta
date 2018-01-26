@@ -1,0 +1,14 @@
+{
+  "1": "BYTE",
+  "2": "ASCII",
+  "3": "SHORT",
+  "4": "LONG",
+  "5": "RATIONALE",
+  "6": "SBYTE",
+  "7": "UNDEFINED",
+  "8": "SSHORT",
+  "9": "SLONG",
+  "10": "SRATIONAL",
+  "11": "FLOAT",
+  "12": "DOUBLE"
+}

@@ -1,0 +1,18 @@
+{
+  "262": "PhotometricInterpretation",
+  "256": "ImageWidth",
+  "257": "ImageLength",
+  "258": "BitsPerSample",
+  "259": "Compression",
+  "273": "StripsOffset",
+  "277": "SamplesPerPixel",
+  "278": "RowsPerStrip",
+  "279": "StripByteCounts",
+  "284": "PlanarConfiguration",
+  "339": "SampleFormat",
+  "33550": "ModelPixelScaleTag",
+  "33922": "ModelTiepointTag",
+  "34735": "GeoKeyDirectoryTag",
+  "34736": "GeoDoubleParamsTag",
+  "34737": "GeoAsciiParamsTag"
+}
