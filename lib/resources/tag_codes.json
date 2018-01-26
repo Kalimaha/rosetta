@@ -1,4 +1,5 @@
 {
+  "254": "NewSubfileType",
   "262": "PhotometricInterpretation",
   "256": "ImageWidth",
   "257": "ImageLength",
@@ -14,5 +15,9 @@
   "33922": "ModelTiepointTag",
   "34735": "GeoKeyDirectoryTag",
   "34736": "GeoDoubleParamsTag",
-  "34737": "GeoAsciiParamsTag"
+  "34737": "GeoAsciiParamsTag",
+  "282": "XResolution",
+  "283": "YResolution",
+  "296": "ResolutionUnit",
+  "320": "ColorMap"
 }

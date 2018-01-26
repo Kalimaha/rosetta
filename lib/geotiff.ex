@@ -5,8 +5,9 @@ defmodule GeoTIFF do
   ### Examples:
 
     iex> filename = "./test/resources/example.tif"
-    iex> GeoTIFF.read_headers(filename)
-    {:ok, %{:endianess => :little, :first_ifd_offset => 270_276}}
+    iex> {:ok, response} = GeoTIFF.read_headers(filename)
+    iex> response.first_ifd_offset
+    270_276
 
     iex> filename = "spam.eggs"
     iex> GeoTIFF.read_headers(filename)
@@ -16,13 +17,22 @@ defmodule GeoTIFF do
     with {:ok, file}          <- :file.open(filename, [:read, :binary]),
          {:ok, header_bytes}  <- header_bytes(file),
          {:ok, endianess}     <- endianess(header_bytes),
-         first_ifd_offset     <- first_ifd_offset(header_bytes, endianess) do
-         # {:ok, ifds}          <- parse_ifds(file, first_ifd_offset, endianess) do
+         first_ifd_offset     <- first_ifd_offset(header_bytes, endianess),
+         ifds                 <- parse_ifds(file, first_ifd_offset, endianess) do
 
       :file.close(file)
-      {:ok, %{:endianess => endianess, :first_ifd_offset => first_ifd_offset}}
+      # IO.puts GeoTIFFFormatter.format_headers %{:filename => filename, :endianess => endianess, :first_ifd_offset => first_ifd_offset, :ifds => ifds}
+      {:ok, %{:filename => filename, :endianess => endianess, :first_ifd_offset => first_ifd_offset, :ifds => ifds}}
     else
       {:error, reason} -> {:error, format_error(filename, reason)}
+    end
+  end
+
+  def inspect(filename) do
+    read_headers(filename)
+    |> case do
+      {:ok, headers} -> GeoTIFFFormatter.format_headers(headers) |> IO.puts
+      {:error, message} -> IO.puts message
     end
   end
 
@@ -60,10 +70,10 @@ defmodule GeoTIFF do
     entries = ifd_entries(file, ifd_offset, endianess)
     :file.position(file, 2 + ifd_offset)
     {:ok, bytes} = :file.read(file, entries * 12 + 4)
-    tags = Enum.map 0..15, &(read_tag(bytes, 12 * &1, endianess))
+    tags = Enum.map(0..15, &(read_tag(bytes, 12 * &1, endianess))) |> Enum.sort(&(&1.tag <= &2.tag))
     next_ifd = decode(bytes, {entries * 12, 4}, endianess)
 
-    %{:entries => entries, :tags => tags, :next_ifd => next_ifd}
+    %{:offset => ifd_offset, :entries => entries, :tags => tags, :next_ifd => next_ifd}
   end
 
   @doc ~S"""
@@ -176,7 +186,5 @@ defmodule GeoTIFF do
     end
   end
 
-  defp format_error(filename, reason) do
-    "Failed to open file '#{filename}'. Reason: #{reason}."
-  end
+  defp format_error(filename, reason), do: "Failed to open file '#{filename}'. Reason: #{reason}."
 end
