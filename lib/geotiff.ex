@@ -11,6 +11,8 @@ defmodule GeoTIFF do
     iex> ifd = Enum.at response.ifds, 0
     iex> Enum.at ifd.tags, 2
     %{count: 15, tag: "GeoAsciiParamsTag", type: "ASCII", value: "unnamed|NAD27|"}
+    iex> Enum.at Enum.at(ifd.tags, 14).value, 0
+    7710
 
     iex> filename = "spam.eggs"
     iex> GeoTIFF.read_headers(filename)
@@ -49,6 +51,13 @@ defmodule GeoTIFF do
         value         = Enum.slice(codepoints, 0, length(codepoints) - 1) |> List.to_string
 
         Map.merge tag, %{:value => value}
+      "LONG" ->
+        :file.position(file, tag.value)
+
+        {:ok, bytes}  = :file.read(file, 4 * tag.count)
+        values = Enum.map(1..tag.count, &(decode(bytes, {(&1 - 1) * 4, 4}, endianess)))
+
+        Map.merge tag, %{:value => values}
       _ -> tag
     end
   end
