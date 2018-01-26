@@ -18,10 +18,9 @@ defmodule GeoTIFF do
          {:ok, header_bytes}  <- header_bytes(file),
          {:ok, endianess}     <- endianess(header_bytes),
          first_ifd_offset     <- first_ifd_offset(header_bytes, endianess),
-         ifds                 <- parse_ifds(file, first_ifd_offset, endianess) do
+         ifds                 <- parse_ifds(file, first_ifd_offset, endianess, []) do
 
       :file.close(file)
-      # IO.puts GeoTIFFFormatter.format_headers %{:filename => filename, :endianess => endianess, :first_ifd_offset => first_ifd_offset, :ifds => ifds}
       {:ok, %{:filename => filename, :endianess => endianess, :first_ifd_offset => first_ifd_offset, :ifds => ifds}}
     else
       {:error, reason} -> {:error, format_error(filename, reason)}
@@ -42,14 +41,17 @@ defmodule GeoTIFF do
   ### Examples:
 
     iex> {:ok, file} = :file.open('./test/resources/example.tif', [:read, :binary])
-    iex> ifds = GeoTIFF.parse_ifds(file, 270_276, :little)
+    iex> ifds = GeoTIFF.parse_ifds(file, 270_276, :little, [])
     iex> length ifds
     1
   """
-  def parse_ifds(file, first_ifd_offset, endianess) do
-    ifd = parse_ifd(file, first_ifd_offset, endianess)
-
-    [ifd]
+  def parse_ifds(file, ifd_offset, endianess, ifds) do
+    with ifd <- parse_ifd(file, ifd_offset, endianess) do
+      case ifd.next_ifd do
+        0 -> [ifd | ifds]
+        _ -> ifds ++ parse_ifds(file, ifd.next_ifd, endianess, ifds)
+      end
+    end
   end
 
   @doc ~S"""
