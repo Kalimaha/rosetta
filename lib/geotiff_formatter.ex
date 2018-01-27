@@ -54,6 +54,17 @@ defmodule GeoTIFFFormatter do
     iex> tag = %{:tag => "Spam", :type => "EGGS", :value => 42, :count => 1}
     iex> GeoTIFFFormatter.format_tag tag
     "  Spam [EGGS]: 42 {count: 1}"
+
+    iex> tag = %{:tag => "Spam", :type => "EGGS", :value => [4, 2, 42], :count => 12}
+    iex> GeoTIFFFormatter.format_tag tag
+    "  Spam [EGGS]: [4, 2, 42] {count: 12}"
   """
-  def format_tag(tag), do: "  #{tag.tag} [#{tag.type}]: #{tag.value} {count: #{tag.count}}"
+  def format_tag(tag) do
+    cond do
+      is_list(tag.value) ->
+        "  #{tag.tag} [#{tag.type}]: #{"[" <> (Enum.join tag.value, ", ") <> "]"} {count: #{tag.count}}"
+      true ->
+        "  #{tag.tag} [#{tag.type}]: #{tag.value} {count: #{tag.count}}"
+    end
+  end
 end

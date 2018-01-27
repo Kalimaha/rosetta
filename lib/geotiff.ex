@@ -4,7 +4,7 @@ defmodule GeoTIFF do
 
   ### Examples:
 
-    iex> filename = "./test/resources/example.tif"
+    iex> filename = "./test/resources/example_ii.tif"
     iex> {:ok, response} = GeoTIFF.read_headers(filename)
     iex> response.first_ifd_offset
     270_276
@@ -86,7 +86,7 @@ defmodule GeoTIFF do
 
   ### Examples:
 
-    iex> {:ok, file} = :file.open('./test/resources/example.tif', [:read, :binary])
+    iex> {:ok, file} = :file.open('./test/resources/example_ii.tif', [:read, :binary])
     iex> ifds = GeoTIFF.parse_ifds(file, 270_276, :little, [])
     iex> length ifds
     1
@@ -105,7 +105,7 @@ defmodule GeoTIFF do
 
   ### Examples:
 
-    iex> {:ok, file} = :file.open('./test/resources/example.tif', [:read, :binary])
+    iex> {:ok, file} = :file.open('./test/resources/example_ii.tif', [:read, :binary])
     iex> ifd = GeoTIFF.parse_ifd(file, 270_276, :little)
     iex> ifd.entries
     16
@@ -148,7 +148,7 @@ defmodule GeoTIFF do
 
   ### Examples:
 
-    iex> {:ok, file} = :file.open('./test/resources/example.tif', [:read, :binary])
+    iex> {:ok, file} = :file.open('./test/resources/example_ii.tif', [:read, :binary])
     iex> GeoTIFF.ifd_entries(file, 270_276, :little)
     16
   """
@@ -177,7 +177,7 @@ defmodule GeoTIFF do
 
   ### Examples:
 
-    iex> filename = "./test/resources/example.tif"
+    iex> filename = "./test/resources/example_ii.tif"
     iex> {:ok, file} = :file.open(filename, [:read, :binary])
     iex> GeoTIFF.header_bytes(file)
     {:ok, <<73, 73, 42, 0, 196, 31, 4, 0>>}
