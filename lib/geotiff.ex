@@ -13,6 +13,8 @@ defmodule GeoTIFF do
     %{count: 15, tag: "GeoAsciiParamsTag", type: "ASCII", value: "unnamed|NAD27|"}
     iex> Enum.at Enum.at(ifd.tags, 14).value, 0
     7710
+    iex> Enum.at(ifd.tags, 0).value
+    8
 
     iex> filename = "spam.eggs"
     iex> GeoTIFF.read_headers(filename)
@@ -41,7 +43,9 @@ defmodule GeoTIFF do
     [nu_ifd]
   end
 
-  def resolve_tag_value(file, tag, endianess) do
+  def resolve_tag_value(file, tag, endianess), do: if tag.count > 4, do: resolve_tag_reference(file, tag, endianess), else: tag
+
+  def resolve_tag_reference(file, tag, endianess) do
     case tag.type do
       "ASCII" ->
         :file.position(file, tag.value)
@@ -56,6 +60,13 @@ defmodule GeoTIFF do
 
         {:ok, bytes}  = :file.read(file, 4 * tag.count)
         values = Enum.map(1..tag.count, &(decode(bytes, {(&1 - 1) * 4, 4}, endianess)))
+
+        Map.merge tag, %{:value => values}
+      "SHORT" ->
+        :file.position(file, tag.value)
+
+        {:ok, bytes}  = :file.read(file, 2 * tag.count)
+        values = Enum.map(1..tag.count, &(decode(bytes, {(&1 - 1) * 2, 2}, endianess)))
 
         Map.merge tag, %{:value => values}
       _ -> tag
